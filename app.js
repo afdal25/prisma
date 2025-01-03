@@ -1,27 +1,20 @@
-const {PrismaClient} = require('@prisma/client')
-const prisma = new PrismaClient();
+const express = require("express");
+const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
+const errorHandler = require('./middlewares/errorHandler');
 
-const createSmartphone = async (req, res, next) => {
-    try {
-        const result = await prisma.smartphone.create({
-            data : {
-                smartphone: req.body.smartphone
-            }
-        })
-        return res.json({
-            status: true,
-            message: "Data berhasil diinput ke tabel smartphone",
-            data: result
-        })
-    } catch(eror){
-        next(eror);
-    }
-}
+const { authenticateToken } = require('./middlewares/jwtMiddleware');
 
-const getSmartphone = async (req, res, next) => {
-    try{
-        const result = await prisma.smartphone.findMany()
-    } catch(eror) {
-        next(eror)
-    }
-}
+const app = express();
+
+app.use(express.json());
+
+app.use('/auth', authRoutes);
+
+app.use(authenticateToken);
+
+app.use("/users", userRoutes);
+
+app.use(errorHandler);
+
+module.exports = app;
